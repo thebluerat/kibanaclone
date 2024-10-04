@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [xAxis, setXAxis] = useState('');
   const [yAxes, setYAxes] = useState([]);  // Y축을 여러 개로 설정
   const [chartType, setChartType] = useState('bar');
+  const [yAxisSettings, setYAxisSettings] = useState({}); // Y축 설정 저장
 
   // CSV 데이터 업로드 핸들러
   const handleUpload = (csvData) => {
@@ -40,6 +41,11 @@ const Dashboard = () => {
     setYAxes(yAxes.filter((f) => f !== field));
   };
 
+  // Y축 필드 설정 변경 핸들러
+  const handleYAxisSettingsChange = (newSettings) => {
+    setYAxisSettings(newSettings); // Y축 설정을 업데이트
+  };
+
   // CSV 데이터의 첫 번째 객체에서 헤더를 추출
   const headers = data.length > 0 ? Object.keys(data[0]) : [];
 
@@ -63,7 +69,13 @@ const Dashboard = () => {
           }}
           onDragOver={(e) => e.preventDefault()} // 드롭 가능하도록 설정
         >
-          <Chart data={data} xAxis={xAxis} yAxes={yAxes} chartType={chartType} />
+          <Chart
+            data={data}
+            xAxis={xAxis}
+            yAxes={yAxes}
+            chartType={chartType}
+            yAxisSettings={yAxisSettings} // 차트에 Y축 설정 전달
+          />
         </div>
 
         <div className="w-1/3 p-4">
@@ -74,6 +86,7 @@ const Dashboard = () => {
             onRemoveYAxis={handleRemoveYAxis}  // Y축에서 필드 제거
             chartType={chartType}
             onChartTypeChange={setChartType}
+            onYAxisSettingsChange={handleYAxisSettingsChange} // Y축 설정 변경 전달
           />
         </div>
       </div>

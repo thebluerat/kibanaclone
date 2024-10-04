@@ -1,12 +1,32 @@
-import { useCallback } from 'react';
+import { useState } from 'react';
+import YAxisSettings from './YAxisSettings';
 
-const ChartEditor = ({ xAxis, yAxes, onFieldDrop, onRemoveYAxis, chartType, onChartTypeChange }) => {
+const ChartEditor = ({ xAxis, yAxes, onFieldDrop, onRemoveYAxis, chartType, onChartTypeChange, onYAxisSettingsChange, yAxisSettings = {} }) => {
+  const [settingsField, setSettingsField] = useState(null); // Y축 필드 설정 팝업 상태 관리
+  const [settingsForEdit, setSettingsForEdit] = useState(null); // 설정할 필드의 현재 설정
 
-  // ChartEditor 안에서 축을 드래그 앤 드롭으로 변경
+  // 필드를 드래그 앤 드롭으로 축 변경
   const handleDrop = (e, axis) => {
+    e.preventDefault();
     const field = e.dataTransfer.getData('field');
     if (field) {
-      onFieldDrop(axis, field); // 드롭된 필드를 X축 또는 Y축으로 설정
+      onFieldDrop(axis, field);
+
+      // 새로운 Y축 필드를 드롭할 때 기존 설정을 유지하면서 새로운 필드를 추가
+      if (axis === 'y' && !yAxisSettings[field]) {
+        const defaultSettings = {
+          field,
+          function: 'Median',
+          format: 'Default',
+          color: '#6092C0',
+          side: 'Auto',
+        };
+        // 기존 설정과 병합하여 새로운 필드를 추가
+        onYAxisSettingsChange((prevSettings) => ({
+          ...prevSettings, // 기존 설정 유지
+          [field]: defaultSettings, // 새로운 필드 추가
+        }));
+      }
     }
   };
 
@@ -15,11 +35,26 @@ const ChartEditor = ({ xAxis, yAxes, onFieldDrop, onRemoveYAxis, chartType, onCh
   };
 
   const handleDragStart = (e, field) => {
-    e.dataTransfer.setData('field', field); // X축 또는 Y축 필드를 드래그할 수 있게 함
+    e.dataTransfer.setData('field', field); // 필드 드래그 시작
+  };
+
+  // Y축 필드 설정 변경 핸들러
+  const handleSettingsChange = (field, settings) => {
+    // 현재 상태를 기반으로 새로운 설정 병합
+    onYAxisSettingsChange((prevSettings) => ({
+      ...prevSettings, // 이전 상태를 유지
+      [field]: { ...prevSettings[field], ...settings }, // 새로운 필드 설정 병합
+    }));
+  };
+
+  // Y축 필드 더블 클릭 시 팝업을 열고, 기존 설정 값을 로드
+  const handleDoubleClick = (yAxis) => {
+    setSettingsField(yAxis);
+    setSettingsForEdit(yAxisSettings[yAxis] || {}); // 현재 설정을 로드
   };
 
   return (
-    <div className="w-full flex-row">
+    <div className="w-full h-screen flex-row">
       <div className="mb-4">
         <label className="block mb-2">차트 유형 선택</label>
         <select
@@ -52,7 +87,6 @@ const ChartEditor = ({ xAxis, yAxes, onFieldDrop, onRemoveYAxis, chartType, onCh
           <div className="mb-4">
             <label className="block mb-2">Y축 선택 (여러 필드 가능)</label>
 
-            {/* 여러 개의 Y축 필드를 표시 */}
             {yAxes.map((yAxis) => (
               <div
                 key={yAxis}
@@ -61,10 +95,9 @@ const ChartEditor = ({ xAxis, yAxes, onFieldDrop, onRemoveYAxis, chartType, onCh
                 onDragOver={handleDragOver}
                 draggable
                 onDragStart={(e) => handleDragStart(e, yAxis)} // Y축 필드 드래그 시작
+                onDoubleClick={() => handleDoubleClick(yAxis)} // Y축 필드 더블 클릭 시 설정창 열기
               >
                 {yAxis}
-
-                {/* Y축 필드를 제거하는 버튼 */}
                 <button onClick={() => onRemoveYAxis(yAxis)} className="ml-4 p-2 bg-red-500 text-white">
                   삭제
                 </button>
@@ -80,6 +113,16 @@ const ChartEditor = ({ xAxis, yAxes, onFieldDrop, onRemoveYAxis, chartType, onCh
             </div>
           </div>
         </>
+      )}
+
+      {/* Y축 필드 설정을 위한 팝업 */}
+      {settingsField && (
+        <YAxisSettings
+          field={settingsField}
+          settings={settingsForEdit} // 기존 설정을 팝업으로 전달
+          onClose={() => setSettingsField(null)} // 설정창 닫기
+          onSettingsChange={(settings) => handleSettingsChange(settingsField, settings)} // 설정 변경
+        />
       )}
     </div>
   );
