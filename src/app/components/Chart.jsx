@@ -15,10 +15,10 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings }) =>
             name: yAxis,
             value: data.reduce((sum, row) => sum + (parseFloat(row[yAxis]) || 0), 0),
           })),
-          radius: '50%', 
+          radius: '50%',
           label: {
             show: true,
-            formatter: '{b}: {c}', // Pie 차트 라벨 설정
+            formatter: '{b}: {c}',
             fontSize: 12,
             position: pieSettings.labelPosition || 'outside',
           },
@@ -50,7 +50,7 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings }) =>
           show: true,
           fontSize: 10,
           position: 'top',
-          formatter: (params) => formatValue(params.value, settings.format), // 변경된 formatter
+          formatter: (params) => formatValue(params.value, settings.format),
         },
       };
     });
@@ -73,8 +73,43 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings }) =>
     }
   };
 
+  const renderTable = () => (
+    <table className="table-auto w-full border-collapse border border-gray-300">
+      <thead>
+        <tr>
+          <th className="border px-4 py-2">Index</th>
+          <th className="border px-4 py-2">{xAxis}</th>
+          {yAxes.map((yAxis) => (
+            <th key={yAxis} className="border px-4 py-2">
+              {yAxis}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((row, index) => (
+          <tr key={index}>
+            <td className="border px-4 py-2">{index + 1}</td>
+            <td className="border px-4 py-2">{row[xAxis]}</td>
+            {yAxes.map((yAxis) => (
+              <td key={yAxis} className="border px-4 py-2">
+                {row[yAxis]}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+
   useEffect(() => {
-    if (!data.length || (chartType !== 'pie' && (!xAxis || !yAxes.length))) return;
+    if (chartType === 'table') {
+      if (chartRef.current) {
+        echarts.dispose(chartRef.current); 
+        chartRef.current = null;
+      }
+      return;
+    }
 
     const chartDom = document.getElementById('chart');
     if (!chartDom) return;
@@ -117,7 +152,11 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings }) =>
     };
   }, [xAxis, yDataSeries, data.length, chartType]);
 
-  return <div id="chart" className="w-full h-full" style={{ minHeight: '500px' }}></div>;
+  return (
+    <div className="w-full h-full" style={{ minHeight: '500px' }}>
+      {chartType === 'table' ? renderTable() : <div id="chart" style={{ height: '100%' }} />}
+    </div>
+  );
 };
 
 export default Chart;
