@@ -34,22 +34,17 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings }) =>
         side: 'Auto',
       };
 
-      const yData = data.map((row) => {
-        const cleanedValue = row[yAxis]?.replace(/[^0-9.]/g, '');
-        const value = parseFloat(cleanedValue);
-        return isNaN(value) ? 0 : value;
-      });
+      const yData = data.map((row) => parseFloat(row[yAxis]?.replace(/[^0-9.]/g, '') || 0));
 
       return {
         name: `${settings.function} of ${yAxis}`,
-        type: chartType,
+        type: chartType === 'bar-horizontal' ? 'bar' : chartType,
         data: yData,
-        yAxisIndex: settings.side === 'Right' ? 1 : 0,
         itemStyle: { color: settings.color || '#6092C0' },
         label: {
           show: true,
           fontSize: 10,
-          position: 'top',
+          position: chartType === 'bar-horizontal' ? 'right' : 'top',
           formatter: (params) => formatValue(params.value, settings.format),
         },
       };
@@ -58,18 +53,12 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings }) =>
 
   const formatValue = (val, format) => {
     switch (format) {
-      case 'Percent':
-        return `${val}%`;
-      case 'Bits':
-        return `${val} bits`;
-      case 'Bytes':
-        return `${val} bytes`;
-      case 'Duration':
-        return `${val} sec`;
-      case 'Number':
-        return val.toLocaleString();
-      default:
-        return val;
+      case 'Percent': return `${val}%`;
+      case 'Bits': return `${val} bits`;
+      case 'Bytes': return `${val} bytes`;
+      case 'Duration': return `${val} sec`;
+      case 'Number': return val.toLocaleString();
+      default: return val;
     }
   };
 
@@ -105,7 +94,7 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings }) =>
   useEffect(() => {
     if (chartType === 'table') {
       if (chartRef.current) {
-        echarts.dispose(chartRef.current); 
+        echarts.dispose(chartRef.current);
         chartRef.current = null;
       }
       return;
@@ -118,7 +107,7 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings }) =>
     chartRef.current = myChart;
 
     const option = {
-      xAxis: chartType !== 'pie' ? {
+      xAxis: chartType === 'bar-horizontal' ? { type: 'value' } : {
         type: 'category',
         data: xData,
         axisLabel: {
@@ -128,11 +117,18 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings }) =>
         axisTick: {
           alignWithLabel: true,
         },
-      } : undefined,
-      yAxis: chartType !== 'pie' ? [
+      },
+      yAxis: chartType === 'bar-horizontal' ? {
+        type: 'category',
+        data: xData,
+        inverse: true,
+        axisLabel: {
+          interval: Math.ceil(xData.length / 9) - 1,
+        },
+      } : [
         { type: 'value', name: 'Left Axis' },
         { type: 'value', name: 'Right Axis', position: 'right' },
-      ] : undefined,
+      ],
       series: yDataSeries,
     };
 

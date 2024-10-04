@@ -17,14 +17,12 @@ const ChartEditor = ({
   const [settingsField, setSettingsField] = useState(null);
   const [settingsForEdit, setSettingsForEdit] = useState(null);
 
-  // 필드를 드래그 앤 드롭으로 축 변경
   const handleDrop = (e, axis) => {
     e.preventDefault();
     const field = e.dataTransfer.getData('field');
     if (field) {
       onFieldDrop(axis, field);
 
-      // 새로운 Y축 필드를 드롭할 때 기본 설정 추가
       if (axis === 'y' && !yAxisSettings[field]) {
         const defaultSettings = {
           field,
@@ -49,7 +47,6 @@ const ChartEditor = ({
     e.dataTransfer.setData('field', field);
   };
 
-  // Y축 필드 설정 변경 핸들러
   const handleDoubleClick = (yAxis) => {
     setSettingsField(yAxis);
     setSettingsForEdit(yAxisSettings[yAxis] || {});
@@ -65,16 +62,17 @@ const ChartEditor = ({
           className="p-2 border"
         >
           <option value="bar">Bar Chart</option>
+          <option value="bar-horizontal">Bar Horizontal Chart</option> {/* New Option */}
           <option value="line">Line Chart</option>
           <option value="pie">Pie Chart</option>
-          <option value="table">Table</option> 
+          <option value="table">Table</option>
         </select>
       </div>
 
       {chartType === 'pie' ? (
         <PieChartSettings
           settings={pieSettings}
-          onSettingsChange={onPieSettingsChange} // Pie 설정 변경
+          onSettingsChange={onPieSettingsChange} 
         />
       ) : (
         <>
