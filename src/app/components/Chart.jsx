@@ -69,9 +69,7 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings }) =>
           <th className="border px-4 py-2">Index</th>
           <th className="border px-4 py-2">{xAxis}</th>
           {yAxes.map((yAxis) => (
-            <th key={yAxis} className="border px-4 py-2">
-              {yAxis}
-            </th>
+            <th key={yAxis} className="border px-4 py-2">{yAxis}</th>
           ))}
         </tr>
       </thead>
@@ -81,9 +79,7 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings }) =>
             <td className="border px-4 py-2">{index + 1}</td>
             <td className="border px-4 py-2">{row[xAxis]}</td>
             {yAxes.map((yAxis) => (
-              <td key={yAxis} className="border px-4 py-2">
-                {row[yAxis]}
-              </td>
+              <td key={yAxis} className="border px-4 py-2">{row[yAxis]}</td>
             ))}
           </tr>
         ))}
@@ -91,66 +87,37 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings }) =>
     </table>
   );
 
-  useEffect(() => {
-    if (chartType === 'table') {
-      if (chartRef.current) {
-        echarts.dispose(chartRef.current);
-        chartRef.current = null;
-      }
-      return;
-    }
-
-    const chartDom = document.getElementById('chart');
-    if (!chartDom) return;
-
-    const myChart = echarts.init(chartDom);
-    chartRef.current = myChart;
-
-    const option = {
-      xAxis: chartType === 'bar-horizontal' ? { type: 'value' } : {
-        type: 'category',
-        data: xData,
-        axisLabel: {
-          interval: Math.ceil(xData.length / 9) - 1,
-          rotate: 45,
-        },
-        axisTick: {
-          alignWithLabel: true,
-        },
+  const chartOptions = useMemo(() => {
+    return {
+      tooltip: {},
+      xAxis: {
+        type: chartType === 'bar-horizontal' ? 'value' : 'category', // X-axis as value for horizontal bar chart
+        boundaryGap: chartType === 'bar-horizontal', // Allow for gap in horizontal bar chart
       },
-      yAxis: chartType === 'bar-horizontal' ? {
-        type: 'category',
-        data: xData,
-        inverse: true,
-        axisLabel: {
-          interval: Math.ceil(xData.length / 9) - 1,
-        },
-      } : [
-        { type: 'value', name: 'Left Axis' },
-        { type: 'value', name: 'Right Axis', position: 'right' },
-      ],
+      yAxis: {
+        type: chartType === 'bar-horizontal' ? 'category' : 'value', // Y-axis as category for horizontal bar chart
+        data: chartType === 'bar-horizontal' ? xData : undefined, // Set y-axis categories
+      },
       series: yDataSeries,
     };
+  }, [yDataSeries, xData, chartType]);
 
-    myChart.setOption(option);
+  useEffect(() => {
+    if (chartRef.current) {
+      const chartDom = chartRef.current;
+      const myChart = echarts.init(chartDom);
+      myChart.setOption(chartOptions);
 
-    const handleResize = () => {
-      if (chartRef.current) chartRef.current.resize();
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      if (chartRef.current) {
-        chartRef.current.dispose();
-      }
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [xAxis, yDataSeries, data.length, chartType]);
+      // Cleanup function to dispose chart instance
+      return () => {
+        myChart.dispose();
+      };
+    }
+  }, [chartOptions]);
 
   return (
-    <div className="w-full h-full" style={{ minHeight: '500px' }}>
-      {chartType === 'table' ? renderTable() : <div id="chart" style={{ height: '100%' }} />}
+    <div>
+      {chartType === 'table' ? renderTable() : <div ref={chartRef} id="chart" style={{ width: '100%', height: '400px' }} />}
     </div>
   );
 };
