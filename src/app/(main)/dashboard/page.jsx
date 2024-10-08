@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import DataTable from '../components/DataTable';
-import UploadButton from '../components/UploadButton';
-import Chart from '../components/Chart';
-import ChartEditor from '../components/ChartEditor';
-import { parseCSV } from '../utils/csvParser';
-import PieChartSettings from '../components/PieChartSettings';
+import DataTable from '../../../components/DataTable';
+import UploadButton from '../../../components/UploadButton';
+import Chart from '../../../components/Chart';
+import ChartEditor from '../../../components/ChartEditor';
+import { parseCSV } from '../../../utils/csvParser';
+import PieChartSettings from '../../../components/PieChartSettings';
 
 const Dashboard = () => {
   const [data, setData] = useState([]);

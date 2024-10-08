@@ -1,6 +1,4 @@
-import { useMemo } from 'react';
-
-const DataTable = ({ headers, onFieldDrop }) => {
+const DataTable = ({ headers }) => {
   if (!headers || headers.length === 0) return <p>데이터가 없습니다</p>;
 
   const handleDragStart = (e, header) => {
