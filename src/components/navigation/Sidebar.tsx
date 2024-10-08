@@ -17,15 +17,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             </div>
             <nav>
                 <ul>
-                <li className="p-2 hover:bg-gray-700">
-                    <Link href="/">홈</Link>
-                </li>
-                <li className="p-2 hover:bg-gray-700">
-                    <Link href="/dashboard">대시보드</Link>
-                </li>
-                <li className="p-2 hover:bg-gray-700">
-                    <Link href="/index">인덱스</Link>
-                </li>
+                    <li className="p-2 hover:bg-gray-700">
+                        <Link href="/">홈</Link>
+                    </li>
+                    <li className="p-2 hover:bg-gray-700">
+                        <Link href="/dashboard">대시보드</Link>
+                    </li>
+                    <li className="p-2 hover:bg-gray-700">
+                        <Link href="/index">인덱스</Link>
+                    </li>
+                    <li className="p-2 hover:bg-gray-700">
+                        <Link href="/visualizationlibrary">시각화 라이브러리</Link>
+                    </li>
                 </ul>
             </nav>
         </div>

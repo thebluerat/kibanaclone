@@ -15,6 +15,7 @@ const Dashboard = () => {
   const [yAxisSettings, setYAxisSettings] = useState({});
   const [pieSettings, setPieSettings] = useState({ labelPosition: 'outside' });
   const [files, setFiles] = useState([]); // 업로드된 파일 목록
+  const [chartName, setChartName] = useState(''); // 차트 이름
   const [selectedFile, setSelectedFile] = useState(null); // 선택된 파일
 
   // 업로드된 파일 목록 가져오기
@@ -69,6 +70,34 @@ const Dashboard = () => {
     handleUpload(csvData); // 선택한 파일의 데이터를 업로드
   };
 
+  // 차트를 저장하는 함수
+  const saveChart = async () => {
+    const chartData = {
+      name: chartName,
+      xAxis,
+      yAxes,
+      chartType,
+      yAxisSettings,
+      pieSettings,
+      data, // 실제 데이터도 포함
+    };
+
+    const response = await fetch('/api/charts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(chartData),
+    });
+
+    if (response.ok) {
+      alert('차트가 저장되었습니다!');
+      setChartName(''); // 차트 이름 초기화
+    } else {
+      alert('차트 저장에 실패했습니다.');
+    }
+  };
+
   return (
     <div className="flex h-full">
       <div className="w-1/4 bg-gray-100 p-4 min-h-screen overflow-scroll">
@@ -88,14 +117,15 @@ const Dashboard = () => {
         {data.length > 0 && <DataTable headers={headers} onFieldDrop={handleFieldDropToChart} />}
       </div>
 
-      {/* 이 부분을 flex-1으로 변경 */}
       <div className="flex-1 p-4 flex min-h-screen">
         <div
           className="w-2/3 p-4 border"
           onDrop={(e) => {
             e.preventDefault();
             const field = e.dataTransfer.getData('field');
-            handleFieldDropToChart(field);
+            if (field) {
+              handleFieldDropToChart(field);
+            }
           }}
           onDragOver={(e) => e.preventDefault()}
         >
@@ -122,12 +152,25 @@ const Dashboard = () => {
             pieSettings={pieSettings}
             onPieSettingsChange={handlePieSettingsChange}
           />
-          {chartType === 'pie' && (
-            <PieChartSettings
-              settings={pieSettings}
-              onSettingsChange={handlePieSettingsChange}
+
+          {/* 차트 이름 입력 필드 추가 */}
+          <div className="mt-4">
+            <label htmlFor="chartName">차트 이름:</label>
+            <input
+              id="chartName"
+              type="text"
+              value={chartName}
+              onChange={(e) => setChartName(e.target.value)}
+              className="border border-gray-300 rounded px-2 py-1 w-full"
+              placeholder="차트 이름 입력"
             />
-          )}
+            <button
+              onClick={saveChart}
+              className="mt-2 bg-blue-500 text-white rounded px-4 py-1"
+            >
+              차트 저장
+            </button>
+          </div>
         </div>
       </div>
     </div>
