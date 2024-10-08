@@ -14,6 +14,19 @@ const PieChartSettings = ({ settings = {}, onSettingsChange = () => {} }) => {
           <option value="outside">Outside</option>
         </select>
       </label>
+      <br />
+      <label>
+        데이터 계산 방법:
+        <select
+          value={settings.dataCalculation || 'sum'}
+          onChange={(e) => onSettingsChange({ dataCalculation: e.target.value })}
+        >
+          <option value="sum">합계 (Sum)</option>
+          <option value="average">평균 (Average)</option>
+          <option value="count">개수 (Count)</option>
+          <option value="percentage">비율 (Percentage)</option>
+        </select>
+      </label>
     </div>
   );
 };
