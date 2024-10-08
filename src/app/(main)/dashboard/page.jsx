@@ -71,7 +71,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex h-full">
-      <div className="w-1/4 bg-gray-100 p-4 overflow-scroll">
+      <div className="w-1/4 bg-gray-100 p-4 min-h-screen overflow-scroll">
         <h1 className="text-lg font-bold mb-4">데이터 필드</h1>
         
         {/* 업로드된 파일 선택 */}
@@ -88,7 +88,8 @@ const Dashboard = () => {
         {data.length > 0 && <DataTable headers={headers} onFieldDrop={handleFieldDropToChart} />}
       </div>
 
-      <div className="w-3/4 p-4 flex">
+      {/* 이 부분을 flex-1으로 변경 */}
+      <div className="flex-1 p-4 flex min-h-screen">
         <div
           className="w-2/3 p-4 border"
           onDrop={(e) => {

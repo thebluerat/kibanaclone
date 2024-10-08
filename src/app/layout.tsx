@@ -1,20 +1,29 @@
-import { ReactNode } from 'react';
+'use client';
+
+import { ReactNode, useState } from 'react';
 import './globals.css';
+import Sidebar from '../components/navigation/Sidebar';
+import TopBar from '../components/navigation/TopBar';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export default function RootLayout({ children }: LayoutProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
     <html lang="en">
       <body>
-        <div className="flex h-screen">
-          <aside className="w-64 bg-gray-800 text-white">
-            <div className="p-4">Sidebar</div>
-          </aside>
-          <main className="flex-1 p-6 bg-gray-100">
-            {children} {/* 각 페이지의 콘텐츠가 이곳에 렌더링됩니다 */}
+        <div className="relative">
+          <TopBar toggleSidebar={toggleSidebar} /> {/* TopBar 추가 */}
+          <Sidebar isOpen={isSidebarOpen} /> {/* Sidebar 추가 */}
+          <main className="pt-12 p-6 bg-gray-100 min-h-screen">
+            {children} {/* 각 페이지의 콘텐츠 */}
           </main>
         </div>
       </body>
