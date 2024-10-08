@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import DataTable from '../../../components/DataTable';
-import UploadButton from '../../../components/UploadButton';
 import Chart from '../../../components/Chart';
 import ChartEditor from '../../../components/ChartEditor';
 import { parseCSV } from '../../../utils/csvParser';
@@ -15,6 +14,19 @@ const Dashboard = () => {
   const [chartType, setChartType] = useState('bar');
   const [yAxisSettings, setYAxisSettings] = useState({});
   const [pieSettings, setPieSettings] = useState({ labelPosition: 'outside' });
+  const [files, setFiles] = useState([]); // 업로드된 파일 목록
+  const [selectedFile, setSelectedFile] = useState(null); // 선택된 파일
+
+  // 업로드된 파일 목록 가져오기
+  useEffect(() => {
+    const fetchFiles = async () => {
+      const response = await fetch('/api/upload'); // 업로드된 파일 목록을 가져오는 API 호출
+      const result = await response.json();
+      setFiles(result.files); // 파일 목록 저장
+    };
+
+    fetchFiles();
+  }, []);
 
   const handleUpload = (csvData) => {
     const parsedData = parseCSV(csvData);
@@ -49,11 +61,30 @@ const Dashboard = () => {
     setPieSettings((prevSettings) => ({ ...prevSettings, ...newSettings }));
   };
 
+  // 선택된 파일의 CSV 데이터 읽기
+  const handleFileSelect = async (fileName) => {
+    const file = files.find((f) => f.fileName === fileName);
+    const response = await fetch(file.filePath);
+    const csvData = await response.text();
+    handleUpload(csvData); // 선택한 파일의 데이터를 업로드
+  };
+
   return (
     <div className="flex h-full">
       <div className="w-1/4 bg-gray-100 p-4 overflow-scroll">
         <h1 className="text-lg font-bold mb-4">데이터 필드</h1>
-        <UploadButton onUpload={handleUpload} />
+        
+        {/* 업로드된 파일 선택 */}
+        <label htmlFor="fileSelect">업로드된 CSV 파일 선택:</label>
+        <select id="fileSelect" onChange={(e) => handleFileSelect(e.target.value)}>
+          <option value="">파일 선택</option>
+          {files.map((file) => (
+            <option key={file.fileName} value={file.fileName}>
+              {file.fileName}
+            </option>
+          ))}
+        </select>
+
         {data.length > 0 && <DataTable headers={headers} onFieldDrop={handleFieldDropToChart} />}
       </div>
 
