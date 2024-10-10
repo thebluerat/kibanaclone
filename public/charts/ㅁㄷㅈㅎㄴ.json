@@ -1,0 +1,7 @@
+{
+  "title": "ㅁㄷㅈㅎㄴ",
+  "description": "ㅁㄴㄷㅎㄶ",
+  "dashboard": "dashboard1",
+  "addToLibrary": true,
+  "data": "{\n  \"xAxis\": \"\",\n  \"yAxes\": [],\n  \"chartType\": \"bar\",\n  \"yAxisSettings\": {},\n  \"pieSettings\": {\n    \"labelPosition\": \"outside\"\n  },\n  \"data\": []\n}"
+}
