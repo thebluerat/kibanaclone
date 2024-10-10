@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as echarts from 'echarts';
 
-const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings, settings = {} }) => {
+const Chart = ({ data = [], xAxis, yAxes = [], chartType, yAxisSettings, pieSettings, settings = {} }) => {
   const chartRef = useRef(null);
 
   // Get x-axis data
@@ -108,7 +108,6 @@ const Chart = ({ data, xAxis, yAxes, chartType, yAxisSettings, pieSettings, sett
     };
   }, [xData, yDataSeries, chartType]);
   
-
   const formatValue = (val, format) => {
     switch (format) {
       case 'Percent': return `${val}%`;

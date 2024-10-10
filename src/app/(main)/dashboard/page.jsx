@@ -72,31 +72,47 @@ const Dashboard = () => {
 
   // 차트를 저장하는 함수
   const saveChart = async () => {
+    if (!chartName) {
+      alert('차트 이름을 입력해주세요.');
+      return;
+    }
+  
     const chartData = {
       name: chartName,
-      xAxis,
-      yAxes,
-      chartType,
-      yAxisSettings,
-      pieSettings,
-      data, // 실제 데이터도 포함
-    };
-
-    const response = await fetch('/api/charts', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+      data: {
+        xAxis, // xAxis 그대로 사용
+        yAxes, // yAxes 그대로 사용
+        chartType,
+        yAxisSettings,
+        pieSettings,
+        data: data.map(item => {
+          // item의 키와 값들을 그대로 사용
+          return { ...item }; 
+        }),
       },
-      body: JSON.stringify(chartData),
-    });
-
-    if (response.ok) {
+    };
+  
+    try {
+      const response = await fetch('/api/charts/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(chartData),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`차트 저장에 실패했습니다: ${response.statusText}`);
+      }
+  
       alert('차트가 저장되었습니다!');
-      setChartName(''); // 차트 이름 초기화
-    } else {
-      alert('차트 저장에 실패했습니다.');
+      setChartName('');
+    } catch (error) {
+      alert(error.message);
+      console.error('Error:', error);
     }
   };
+  
 
   return (
     <div className="flex h-full">

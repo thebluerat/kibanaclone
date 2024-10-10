@@ -12,11 +12,12 @@ const VisualizationLibrary = () => {
   useEffect(() => {
     const fetchCharts = async () => {
       try {
-        const response = await fetch('/api/charts'); // 저장된 차트 목록을 가져오는 API 호출
+        const response = await fetch('/api/charts/get'); // 저장된 차트 목록을 가져오는 API 호출
         if (!response.ok) {
           throw new Error('차트를 불러오는 데 실패했습니다.'); // 응답이 실패한 경우
         }
         const result = await response.json();
+        console.log('Fetched charts:', result.charts); 
         setCharts(result.charts || []); // 차트 목록 상태 업데이트
       } catch (error) {
         console.error(error);
@@ -29,8 +30,10 @@ const VisualizationLibrary = () => {
 
   // 차트를 선택했을 때 해당 차트를 보여주는 함수
   const handleChartSelect = (chartId) => {
-    router.push(`/charts/${chartId}`); // 해당 차트 페이지로 이동
+    const encodedChartId = encodeURIComponent(chartId); // 차트 이름을 URL-safe하게 변환
+    router.push(`/charts/${encodedChartId}`); // 변환된 차트 이름으로 페이지 이동
   };
+  
 
   // 차트 편집 페이지로 이동
   const handleEditChart = (chartId) => {
