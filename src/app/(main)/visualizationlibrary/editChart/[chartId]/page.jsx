@@ -14,7 +14,7 @@ const EditChart = ({ params }) => {
   const [chartData, setChartData] = useState(null);
   const [xAxis, setXAxis] = useState('');
   const [yAxes, setYAxes] = useState([]);
-  const [chartType, setChartType] = useState('bar');
+  const [chartType, setChartType] = useState('bar-horizontal'); // 기본 차트 타입
   const [yAxisSettings, setYAxisSettings] = useState({});
   const [pieSettings, setPieSettings] = useState({ labelPosition: 'outside' });
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,14 +33,13 @@ const EditChart = ({ params }) => {
         setChartData(data);
 
         // 안전하게 데이터 설정
-        setXAxis(data.data?.xAxis || '');
-        setYAxes(data.data?.yAxes || []);
-        setChartType(data.data?.chartType || 'bar');
-        setYAxisSettings(data.data?.yAxisSettings || {});
-        setPieSettings(data.data?.pieSettings || { labelPosition: 'outside' });
-
-        console.log(data.data); // 데이터 확인
-
+        setXAxis(data.xAxis); // X축 설정
+        setYAxes(data.yAxes); // Y축 설정
+        setChartType(data.chartType || 'bar-horizontal');
+        setYAxisSettings(data.yAxisSettings || {});
+        setPieSettings(data.pieSettings || { labelPosition: 'outside' });
+        
+        console.log(data); // 데이터 확인
       } catch (error) {
         console.error(error);
       }
@@ -49,9 +48,28 @@ const EditChart = ({ params }) => {
     fetchChart();
   }, [decodedChartId]);
 
+  // 데이터가 로딩 중일 때 표시할 부분
   if (!chartData || !chartData.data) {
-    return <div>로딩 중...</div>; // 데이터가 로딩 중일 때
+    return <div>로딩 중...</div>;
   }
+
+  const handleFieldDropToChart = (field) => {
+    if (!yAxes.includes(field)) {
+      setYAxes([...yAxes, field]);
+    }
+  };
+
+  const handleFieldDropWithinEditor = (axis, field) => {
+    if (axis === 'x') {
+      setXAxis(field);
+    } else if (axis === 'y' && !yAxes.includes(field)) {
+      setYAxes([...yAxes, field]);
+    }
+  };
+
+  const handleRemoveYAxis = (field) => {
+    setYAxes(yAxes.filter((f) => f !== field));
+  };
 
   const handleYAxisSettingsChange = (newSettings) => {
     setYAxisSettings(newSettings);
@@ -61,6 +79,11 @@ const EditChart = ({ params }) => {
     setPieSettings((prevSettings) => ({ ...prevSettings, ...newSettings }));
   };
 
+  // 차트 타입 변경 핸들러
+  const handleChartTypeChange = (newType) => {
+    setChartType(newType);
+  };
+
   const saveChart = async ({ title, description, dashboard, addToLibrary }) => {
     const chartDataToSave = {
       name: title,
@@ -68,12 +91,16 @@ const EditChart = ({ params }) => {
       dashboard,
       addToLibrary,
       data: {
-        xAxis,
-        yAxes,
+        xAxis: xAxis.replace(/"/g, ''), // X축에서 불필요한 따옴표 제거
+        yAxes: yAxes.map(axis => axis.replace(/"/g, '')), // Y축에서 불필요한 따옴표 제거
         chartType,
         yAxisSettings,
         pieSettings,
-        data: chartData.data.data.map((item) => ({ ...item })), // chartData에서 데이터를 추출
+        data: chartData.data.map(item => {
+          return Object.fromEntries(
+            Object.entries(item).map(([key, value]) => [key.replace(/"/g, ''), value])
+          );
+        }),
       },
     };
 
@@ -91,6 +118,7 @@ const EditChart = ({ params }) => {
       }
 
       alert('차트가 저장되었습니다!');
+      router.push('/dashboard'); // 저장 후 대시보드로 리디렉션
     } catch (error) {
       alert(error.message);
       console.error('Error:', error);
@@ -101,38 +129,44 @@ const EditChart = ({ params }) => {
     <div className="flex h-full">
       <div className="w-1/4 bg-gray-100 p-4 min-h-screen overflow-scroll">
         <h1 className="text-lg font-bold mb-4">데이터 필드</h1>
-
-        {/* 데이터 테이블 */}
-        {chartData.data.data && chartData.data.data.length > 0 && (
-          <DataTable headers={Object.keys(chartData.data.data[0] || {})} />
+        {chartData.data.length > 0 && (
+          <DataTable headers={Object.keys(chartData.data[0] || {})} />
         )}
       </div>
-
+  
       <div className="flex-1 p-4 flex min-h-screen">
         <div className="w-2/3 p-4 border">
-          <Chart
-            data={chartData.data} // 실제 데이터
-            xAxis={chartData.xAxis} // X축 데이터
-            yAxes={chartData.yAxes} // Y축 데이터
-            chartType={chartData.chartType} // 차트 타입
-            yAxisSettings={chartData.yAxisSettings} // Y축 설정
-            pieSettings={chartData.pieSettings} // 파이 차트 설정 (있다면)
-          />
+          {chartData && chartData.data.length > 0 ? (
+            <Chart
+              data={chartData.data} // 실제 데이터
+              xAxis={xAxis} // X축 데이터로 변경
+              yAxes={yAxes} // Y축 데이터로 변경
+              chartType={chartType} // 상태에서 직접 읽음
+              yAxisSettings={yAxisSettings} // 상태에서 직접 읽음
+              pieSettings={pieSettings} // 상태에서 직접 읽음
+            />
+          ) : (
+            <div>로딩 중...</div> // 데이터가 없을 때 표시
+          )}
         </div>
-
+  
         <div className="w-1/3 p-4">
           <ChartEditor
             xAxis={xAxis}
             yAxes={yAxes}
+            onFieldDrop={handleFieldDropWithinEditor}
+            onRemoveYAxis={handleRemoveYAxis}
             onYAxisSettingsChange={handleYAxisSettingsChange}
             yAxisSettings={yAxisSettings}
             pieSettings={pieSettings}
             onPieSettingsChange={handlePieSettingsChange}
+            onChartTypeChange={handleChartTypeChange} // 차트 타입 변경 핸들러 전달
+            chartType={chartType} // 현재 차트 타입 상태
           />
           <button onClick={openModal}>차트 저장</button>
         </div>
       </div>
-
+  
       {isModalOpen && (
         <CreateVisualizationModal
           onClose={closeModal}

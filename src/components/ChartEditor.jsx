@@ -18,10 +18,10 @@ const ChartEditor = ({
   const [settingsForEdit, setSettingsForEdit] = useState(null);
 
   const handleDrop = (e, axis) => {
-    e.preventDefault();
-    const field = e.dataTransfer.getData('field');
+    e.preventDefault(); // 기본 드롭 동작 방지
+    const field = e.dataTransfer.getData('field'); // 드래그된 필드 가져오기
     if (field) {
-      onFieldDrop(axis, field);
+      onFieldDrop(axis, field); // 필드 드롭 처리
 
       if (axis === 'y' && !yAxisSettings[field]) {
         const defaultSettings = {
@@ -40,11 +40,11 @@ const ChartEditor = ({
   };
 
   const handleDragOver = (e) => {
-    e.preventDefault();
+    e.preventDefault(); // 드래그 오버 시 기본 동작 방지
   };
 
   const handleDragStart = (e, field) => {
-    e.dataTransfer.setData('field', field);
+    e.dataTransfer.setData('field', field); // 드래그 시작 시 필드 저장
   };
 
   const handleDoubleClick = (yAxis) => {
@@ -62,7 +62,7 @@ const ChartEditor = ({
           className="p-2 border"
         >
           <option value="bar">Bar Chart</option>
-          <option value="bar-horizontal">Bar Horizontal Chart</option> {/* New Option */}
+          <option value="bar-horizontal">Bar Horizontal Chart</option>
           <option value="line">Line Chart</option>
           <option value="pie">Pie Chart</option>
           <option value="table">Table</option>
@@ -72,7 +72,7 @@ const ChartEditor = ({
       {chartType === 'pie' ? (
         <PieChartSettings
           settings={pieSettings}
-          onSettingsChange={onPieSettingsChange} 
+          onSettingsChange={onPieSettingsChange}
         />
       ) : (
         <>
