@@ -5,40 +5,31 @@ import { useRouter } from 'next/navigation';
 import Chart from '../../../../components/Chart';
 
 const ChartDetailPage = ({ params }) => {
-  const { chartId } = params;
-  const decodedChartId = decodeURIComponent(chartId); // URL에서 인코딩된 차트 이름을 디코딩
-  const [chartData, setChartData] = useState(null);
-
-  useEffect(() => {
-    const fetchChart = async () => {
-      try {
-        const response = await fetch(`/charts/${decodedChartId}.json`);
-        if (!response.ok) {
-          throw new Error('차트를 불러오는 데 실패했습니다.');
-        }
-        let data = await response.json();
+    const { chartId } = params;  // URL에서 차트 ID 가져오기
+    const decodedChartId = decodeURIComponent(chartId); // URL에서 인코딩된 차트 이름을 디코딩
+    const [chartData, setChartData] = useState(null);
   
-        // 이중 따옴표 제거 처리
-        data = JSON.parse(JSON.stringify(data, (key, value) => {
-          if (typeof value === 'string') {
-            return value.replace(/"{2}/g, '"');  // 이중 따옴표를 제거
+    useEffect(() => {
+      const fetchChart = async () => {
+        try {
+          const response = await fetch(`/api/charts/get/${decodedChartId}`); // API 호출
+          if (!response.ok) {
+            throw new Error('차트를 불러오는 데 실패했습니다.');
           }
-          return value;
-        }));
+          const data = await response.json(); // JSON으로 변환
   
-        setChartData(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+          setChartData(data); // 차트 데이터 설정
+        } catch (error) {
+          console.error(error);
+        }
+      };
   
-    fetchChart();
-  }, [decodedChartId]);
+      fetchChart();
+    }, [decodedChartId]);
   
-
-  if (!chartData) {
-    return <div>로딩 중...</div>;
-  }
+    if (!chartData) {
+      return <div>로딩 중...</div>; // 데이터가 로딩 중일 때
+    }
 
   // Chart 컴포넌트에 필요한 데이터 및 설정을 전달
   return (

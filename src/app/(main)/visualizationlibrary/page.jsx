@@ -18,7 +18,7 @@ const VisualizationLibrary = () => {
 
   const fetchCharts = async () => {
     try {
-      const response = await fetch('/api/charts/get'); // 저장된 차트 목록을 가져오는 API 호출
+      const response = await fetch('/api/charts/getChartList'); // 저장된 차트 목록을 가져오는 API 호출
       if (!response.ok) {
         throw new Error('차트를 불러오는 데 실패했습니다.'); // 응답이 실패한 경우
       }
@@ -38,7 +38,7 @@ const VisualizationLibrary = () => {
 
   // 차트 편집 페이지로 이동
   const handleEditChart = (chartId) => {
-    router.push(`/edit-chart/${chartId}`); // 차트 편집 페이지로 이동
+    router.push(`/visualizationlibrary/editChart/${chartId}`); // 차트 편집 페이지로 이동
   };
 
   // 차트 정보 모달 열기
