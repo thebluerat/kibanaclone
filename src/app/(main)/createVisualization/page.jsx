@@ -73,48 +73,69 @@ const CreateVisualization = () => {
   };
 
   // 차트를 저장하는 함수
-  const saveChart = async ({ title, description, dashboard, addToLibrary }) => {
-    const chartData = {
-      name: title,
-      description,
-      dashboard,
-      addToLibrary,
-      data: {
-        xAxis,
-        yAxes,
-        chartType,
-        yAxisSettings,
-        pieSettings,
-        data: data.map(item => ({ ...item })),
-      },
-    };
-
-    try {
-      const response = await fetch('/api/charts/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    const saveChart = async ({ title, description, dashboard, addToLibrary }) => {
+        const chartData = {
+        name: title,
+        description,
+        dashboard,
+        addToLibrary,
+        data: {
+            xAxis,
+            yAxes,
+            chartType,
+            yAxisSettings,
+            pieSettings,
+            data: data.map(item => ({ ...item })),
         },
-        body: JSON.stringify(chartData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`차트 저장에 실패했습니다: ${response.statusText}`);
-      }
-
-      alert('차트가 저장되었습니다!');
-      // 상태 초기화 추가
-      setXAxis('');
-      setYAxes([]);
-      setChartType('bar');
-      setYAxisSettings({});
-      setPieSettings({ labelPosition: 'outside' });
-      setData([]); // 데이터 초기화
-    } catch (error) {
-      alert(error.message);
-      console.error('Error:', error);
-    }
-  };
+        };
+    
+        try {
+        // 첫 번째 API 호출: 차트 데이터 저장
+        const response = await fetch('/api/charts/create', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(chartData),
+        });
+    
+        if (!response.ok) {
+            throw new Error(`차트 저장에 실패했습니다: ${response.statusText}`);
+        }
+    
+        // 두 번째 API 호출: 차트 정보 저장
+        const chartInfoData = {
+            title,
+            description,
+            chartId: title, // ID를 제목으로 하거나 다른 방식으로 생성
+        };
+    
+        const infoResponse = await fetch('/api/chartsInfo/create', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(chartInfoData),
+        });
+    
+        if (!infoResponse.ok) {
+            throw new Error(`차트 정보 저장에 실패했습니다: ${infoResponse.statusText}`);
+        }
+    
+        alert('차트와 차트 정보가 저장되었습니다!');
+    
+        // 상태 초기화
+        setXAxis('');
+        setYAxes([]);
+        setChartType('bar');
+        setYAxisSettings({});
+        setPieSettings({ labelPosition: 'outside' });
+        setData([]); // 데이터 초기화
+        } catch (error) {
+        alert(error.message);
+        console.error('Error:', error);
+        }
+    };
 
   return (
     <div className="flex h-full">
