@@ -13,30 +13,29 @@ const VisualizationLibrary = () => {
 
   // 차트 목록을 불러오는 API 호출
   useEffect(() => {
-    const fetchCharts = async () => {
-      try {
-        const response = await fetch('/api/charts/get'); // 저장된 차트 목록을 가져오는 API 호출
-        if (!response.ok) {
-          throw new Error('차트를 불러오는 데 실패했습니다.'); // 응답이 실패한 경우
-        }
-        const result = await response.json();
-        console.log('Fetched charts:', result.charts);
-        setCharts(result.charts || []); // 차트 목록 상태 업데이트
-      } catch (error) {
-        console.error(error);
-        setError(error.message); // 오류 메시지 설정
-      }
-    };
-
     fetchCharts();
   }, []);
 
-  // 차트를 선택했을 때 해당 차트를 보여주는 함수
+  const fetchCharts = async () => {
+    try {
+      const response = await fetch('/api/charts/get'); // 저장된 차트 목록을 가져오는 API 호출
+      if (!response.ok) {
+        throw new Error('차트를 불러오는 데 실패했습니다.'); // 응답이 실패한 경우
+      }
+      const result = await response.json();
+      setCharts(result.charts || []); // 차트 목록 상태 업데이트
+    } catch (error) {
+      console.error(error);
+      setError(error.message); // 오류 메시지 설정
+    }
+  };
+
+  // 차트 선택 핸들러
   const handleChartSelect = (chartId) => {
-    const encodedChartId = encodeURIComponent(chartId); // 차트 이름을 URL-safe하게 변환
+    const encodedChartId = encodeURIComponent(chartId); // 차트 ID를 URL-safe하게 변환
     router.push(`/charts/${encodedChartId}`); // 변환된 차트 이름으로 페이지 이동
   };
-  
+
   // 차트 편집 페이지로 이동
   const handleEditChart = (chartId) => {
     router.push(`/edit-chart/${chartId}`); // 차트 편집 페이지로 이동
@@ -52,32 +51,6 @@ const VisualizationLibrary = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedChart(null);
-  };
-
-  // 차트 정보 업데이트 핸들러
-  const handleUpdate = async (chartId, updatedInfo) => {
-    try {
-      const response = await fetch(`/api/chartsInfo/put/${chartId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedInfo),
-      });
-
-      if (!response.ok) {
-        throw new Error('차트 정보를 업데이트하는 데 실패했습니다.');
-      }
-
-      const result = await response.json();
-      console.log(result.message);
-
-      // 차트 목록을 다시 불러오기
-      await fetchCharts();
-    } catch (error) {
-      console.error(error);
-      setError(error.message);
-    }
   };
 
   return (
@@ -116,7 +89,7 @@ const VisualizationLibrary = () => {
         <ChartsInfoModal 
           chartId={selectedChart} // 선택된 차트 ID 전달
           onClose={closeModal} 
-          onUpdate={handleUpdate} // 업데이트 핸들러 추가
+          onUpdate={fetchCharts} // 모달이 닫힐 때 차트 목록을 다시 불러오기
         />
       )}
     </div>

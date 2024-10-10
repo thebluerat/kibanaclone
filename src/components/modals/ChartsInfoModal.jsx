@@ -11,22 +11,24 @@ const ChartsInfoModal = ({ chartId, onClose, onUpdate }) => {
 
   // 차트 정보를 가져오는 API 호출
   useEffect(() => {
-    const fetchChart = async (chartId) => {
+    if (chartId) {  // chartId가 존재할 때만 API 호출
+      const fetchChart = async () => {
         try {
-          const encodedChartId = encodeURIComponent(chartId); // 차트 ID 인코딩
-          const response = await fetch(`/api/chartsInfo/get/${encodedChartId}`); // 인코딩된 ID 사용
+          const encodedChartId = encodeURIComponent(chartId);
+          const response = await fetch(`/api/chartsInfo/get/${encodedChartId}`);
           if (!response.ok) {
-            throw new Error('차트를 불러오는 데 실패했습니다.'); 
+            throw new Error('차트를 불러오는 데 실패했습니다.');
           }
           const result = await response.json();
-          // ...
+          setChart(result);
         } catch (error) {
           console.error(error);
           setError(error.message);
         }
       };
-
-    fetchChart();
+  
+      fetchChart();
+    }
   }, [chartId]);
 
   // 차트 정보를 가져온 후 title과 description 초기화
@@ -38,28 +40,29 @@ const ChartsInfoModal = ({ chartId, onClose, onUpdate }) => {
   }, [chart]);
 
   const handleSave = async () => {
-    if (chart) { // chart가 존재하는 경우에만 업데이트
-      const updatedChart = { ...chart, title, description }; // 업데이트된 차트 정보 생성
-
+    if (chart) {
+      const updatedChart = { ...chart, title, description };
+  
       try {
-        const response = await fetch(`/api/chartsInfo/update/${chartId}`, {
+        const encodedChartId = encodeURIComponent(chartId); // chartId를 URL에 맞게 인코딩
+        const response = await fetch(`/api/chartsInfo/put/${encodedChartId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(updatedChart), // 업데이트할 데이터
+          body: JSON.stringify(updatedChart),
         });
-
+  
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || '차트 정보 업데이트에 실패했습니다.'); // 오류 처리
+          throw new Error(errorData.message || '차트 정보 업데이트에 실패했습니다.');
         }
-
-        onUpdate(updatedChart); // 부모 컴포넌트로 업데이트된 차트 정보 전달
-        onClose(); // 모달 닫기
+  
+        onUpdate(updatedChart);
+        onClose();
       } catch (error) {
         console.error(error);
-        setError(error.message); // 오류 메시지 설정
+        setError(error.message);
       }
     }
   };

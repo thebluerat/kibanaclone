@@ -6,7 +6,9 @@ const chartsInfoPath = path.join(process.cwd(), 'public/chartsInfo');
 
 export async function PUT(req: Request, { params }: { params: { chartId: string } }) {
   const { chartId } = params;
-  
+
+  console.log("Received chartId:", chartId); // chartId 값 확인
+
   try {
     const body = await req.json();
 
