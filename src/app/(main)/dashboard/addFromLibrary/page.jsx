@@ -13,7 +13,7 @@ const AddFromLibrary = ({ onClose }) => {
   useEffect(() => {
     const fetchCharts = async () => {
         try {
-          const response = await fetch('/api/charts/get');
+          const response = await fetch('/api/charts/getChartList'); // 차트 목록 가져오기
           if (!response.ok) {
             throw new Error('네트워크 응답이 좋지 않습니다.');
           }

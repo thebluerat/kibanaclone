@@ -38,7 +38,7 @@ const EditChart = ({ params }) => {
         setChartType(data.chartType || 'bar-horizontal');
         setYAxisSettings(data.yAxisSettings || {});
         setPieSettings(data.pieSettings || { labelPosition: 'outside' });
-        
+
         console.log(data); // 데이터 확인
       } catch (error) {
         console.error(error);
@@ -86,38 +86,51 @@ const EditChart = ({ params }) => {
 
   const saveChart = async ({ title, description, dashboard, addToLibrary }) => {
     const chartDataToSave = {
-      name: title,
-      description,
-      dashboard,
-      addToLibrary,
-      data: {
-        xAxis: xAxis.replace(/"/g, ''), // X축에서 불필요한 따옴표 제거
-        yAxes: yAxes.map(axis => axis.replace(/"/g, '')), // Y축에서 불필요한 따옴표 제거
-        chartType,
-        yAxisSettings,
-        pieSettings,
-        data: chartData.data.map(item => {
-          return Object.fromEntries(
-            Object.entries(item).map(([key, value]) => [key.replace(/"/g, ''), value])
-          );
-        }),
-      },
+      xAxis: xAxis.replace(/"/g, ''), // X축에서 불필요한 따옴표 제거
+      yAxes: yAxes.map(axis => axis.replace(/"/g, '')), // Y축에서 불필요한 따옴표 제거
+      chartType,
+      yAxisSettings,
+      pieSettings,
+      data: chartData.data.map(item => {
+        return Object.fromEntries(
+          Object.entries(item).map(([key, value]) => [key.replace(/"/g, ''), value])
+        );
+      }),
     };
 
+    // 차트 데이터 저장 API 호출
     try {
       const response = await fetch(`/api/charts/put/${decodedChartId}`, {
-        method: 'POST',
+        method: 'put',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(chartDataToSave),
       });
-
       if (!response.ok) {
-        throw new Error(`차트 저장에 실패했습니다: ${response.statusText}`);
+        throw new Error(`차트 데이터를 저장하는 데 실패했습니다: ${response.statusText}`);
       }
 
-      alert('차트가 저장되었습니다!');
+      // 차트 정보(제목, 설명) 저장 API 호출
+      const chartInfoToSave = {
+        title,
+        description,
+        chartId: decodedChartId,
+      };
+
+      const infoResponse = await fetch(`/api/chartsInfo/put/${decodedChartId}`, {
+        method: 'put',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(chartInfoToSave),
+      });
+
+      if (!infoResponse.ok) {
+        throw new Error(`차트 정보를 저장하는 데 실패했습니다: ${infoResponse.statusText}`);
+      }
+
+      alert('차트가 성공적으로 업데이트되었습니다!');
       router.push('/dashboard'); // 저장 후 대시보드로 리디렉션
     } catch (error) {
       alert(error.message);
