@@ -1,0 +1,26 @@
+{
+  "id": "05d1c5d8-aebd-4416-b74e-4442c3c96183",
+  "name": "대시보드차트추가테스트2",
+  "charts": [
+    {
+      "title": "대시보드차트추가테스트2",
+      "description": "대시보드차트추가테스트2",
+      "addToLibrary": true,
+      "chartType": "bar",
+      "xAxis": "x-axis",
+      "yAxes": [
+        "y-axis"
+      ],
+      "data": [
+        {
+          "x": "1",
+          "y": 100
+        },
+        {
+          "x": "2",
+          "y": 200
+        }
+      ]
+    }
+  ]
+}

@@ -1,24 +1,81 @@
-'use client';
+import React, { useState, useEffect } from 'react';
 
-import React, { useState } from 'react';
-
-const CreateVisualizationModal = ({ onClose, onSave }) => {
+const CreateVisualizationModal = ({ onClose, onSave, fetchDashboards }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedDashboard, setSelectedDashboard] = useState('');
   const [isNewDashboard, setIsNewDashboard] = useState(false);
+  const [newDashboardName, setNewDashboardName] = useState('');
   const [isAddToLibrary, setIsAddToLibrary] = useState(false);
+  const [existingDashboards, setExistingDashboards] = useState([]);
 
-  const handleSave = () => {
+  useEffect(() => {
+    // 기존 대시보드를 가져오는 API 호출
+    const fetchDashboards = async () => {
+      const response = await fetch('/api/dashboards');
+      if (response.ok) {
+        const data = await response.json();
+        setExistingDashboards(data);
+      }
+    };
+
+    fetchDashboards();
+  }, []);
+
+  const handleSave = async () => {
+    let dashboardId = selectedDashboard;
+
+    // 새 대시보드를 생성하는 경우
+    if (isNewDashboard) {
+      const response = await fetch('/api/dashboards/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: newDashboardName }),
+      });
+
+      if (response.ok) {
+        const newDashboard = await response.json();
+        dashboardId = newDashboard.id;
+
+        // 새 대시보드가 생성된 후 대시보드 목록을 다시 가져옴
+        if (fetchDashboards) {
+          await fetchDashboards();
+        }
+      } else {
+        console.error('대시보드 생성 실패');
+        return;
+      }
+    }
+
+    // 차트 데이터
     const chartData = {
       title,
       description,
-      dashboard: isNewDashboard ? 'New Dashboard' : selectedDashboard,
       addToLibrary: isAddToLibrary,
+      chartType: 'bar', // 차트 타입을 동적으로 설정할 필요가 있다면 여기를 수정
+      xAxis: 'x-axis', // 임시 값
+      yAxes: ['y-axis'], // 임시 값
+      data: [{ x: '1', y: 100 }, { x: '2', y: 200 }],
     };
-    
-    onSave(chartData); // 차트 데이터 저장
-    onClose(); // 모달 닫기
+
+    // 대시보드에 차트 추가
+    const updateDashboardResponse = await fetch(`/api/dashboards/${dashboardId}/addChart`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(chartData),
+    });
+
+    if (!updateDashboardResponse.ok) {
+      console.error('차트를 대시보드에 저장하는 데 실패했습니다.');
+      return;
+    }
+
+    onSave(chartData);
+    onClose();
   };
 
   return (
@@ -56,12 +113,16 @@ const CreateVisualizationModal = ({ onClose, onSave }) => {
             value={selectedDashboard}
             onChange={(e) => setSelectedDashboard(e.target.value)}
             className="border rounded p-2 w-full"
+            disabled={isNewDashboard}
           >
             <option value="">Select Existing Dashboard</option>
-            {/* 여기에 대시보드 목록을 추가합니다 */}
-            <option value="dashboard1">Dashboard 1</option>
-            <option value="dashboard2">Dashboard 2</option>
+            {existingDashboards.map((dashboard) => (
+              <option key={dashboard.id} value={dashboard.id}>
+                {dashboard.name}
+              </option>
+            ))}
           </select>
+
           <div className="mt-2">
             <label>
               <input
@@ -72,6 +133,20 @@ const CreateVisualizationModal = ({ onClose, onSave }) => {
               Create New Dashboard
             </label>
           </div>
+
+          {isNewDashboard && (
+            <div className="mt-4">
+              <label htmlFor="newDashboardName" className="block">New Dashboard Name</label>
+              <input
+                type="text"
+                id="newDashboardName"
+                value={newDashboardName}
+                onChange={(e) => setNewDashboardName(e.target.value)}
+                className="border rounded p-2 w-full"
+                placeholder="Enter new dashboard name"
+              />
+            </div>
+          )}
         </div>
 
         <div className="mt-4">
