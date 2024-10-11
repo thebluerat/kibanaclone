@@ -1,0 +1,26 @@
+{
+  "id": "c329d005-e239-4b43-87d5-18b872f1302b",
+  "name": "123",
+  "charts": [
+    {
+      "title": "123",
+      "description": "123",
+      "addToLibrary": true,
+      "chartType": "bar",
+      "xAxis": "x-axis",
+      "yAxes": [
+        "y-axis"
+      ],
+      "data": [
+        {
+          "x": "1",
+          "y": 100
+        },
+        {
+          "x": "2",
+          "y": 200
+        }
+      ]
+    }
+  ]
+}

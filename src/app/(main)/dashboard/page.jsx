@@ -28,14 +28,23 @@ const Dashboard = () => {
 
   const handleDeleteDashboard = async (id) => {
     try {
-      const response = await fetch(`/api/dashboards/${id}`, { method: 'DELETE' }); // DELETE API 호출
-      if (response.ok) {
-        setDashboards((prevDashboards) => prevDashboards.filter(d => d.id !== id)); // 대시보드 목록에서 제거
+      const response = await fetch(`/api/dashboards/delete/${id}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        console.log('대시보드가 성공적으로 삭제되었습니다.');
+
+        // 삭제 후 대시보드 목록에서 해당 대시보드를 제거
+        setDashboards((prevDashboards) =>
+          prevDashboards.filter((dashboard) => dashboard.id !== id)
+        );
       } else {
-        console.error('대시보드 삭제 실패');
+        console.error(result.error);
       }
     } catch (error) {
-      console.error('대시보드를 삭제하는 중 오류 발생:', error);
+      console.error('대시보드 삭제 중 오류 발생:', error);
     }
   };
 
